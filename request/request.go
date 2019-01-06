@@ -51,7 +51,7 @@ type Variables map[string]interface{}
 
 // Request ...
 type Request struct {
-	Query        `json:"query,omitempty"`
+	Query        `json:"query"`
 	Mutation     `json:"mutation,omitempty"`
 	Subscription `json:"subscription,omitempty"`
 	Variables    `json:"variables,omitempty"`
