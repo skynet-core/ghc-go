@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	"hasura/client"
-	"hasura/request"
 	"log"
 	"strings"
+
+	"github.com/skynet-ltd/ghc-go/client"
+	"github.com/skynet-ltd/ghc-go/request"
 )
 
 // Sales ...

@@ -4,12 +4,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"hasura/request"
-	"hasura/response"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"reflect"
+	"sync"
+
+	"github.com/skynet-ltd/ghc-go/response"
+
+	"github.com/skynet-ltd/ghc-go/request"
 )
 
 var httpClient *http.Client
@@ -22,7 +25,8 @@ type Options struct {
 
 // Client ....
 type Client struct {
-	u *url.URL
+	u  *url.URL
+	mu sync.Mutex
 }
 
 // New ...
@@ -40,11 +44,14 @@ func New(apiURL string, opts *Options) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Client{u}, nil
+	return &Client{u: u}, nil
 }
 
 // Execute ...
 func (c *Client) Execute(req *request.Request) (*response.Response, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	data, err := json.Marshal(req)
 	if err != nil {
 		return nil, errors.New("execute: marshal error: " + err.Error())

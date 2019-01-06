@@ -2,8 +2,9 @@ package request_test
 
 import (
 	"fmt"
-	"hasura/request"
 	"testing"
+
+	"github.com/skynet-ltd/ghc-go/request"
 )
 
 func TestHasuraRequest(t *testing.T) {
