@@ -94,7 +94,7 @@ func httpExecute(u *url.URL, data []byte) (*response.Response, error) {
 	}
 
 	if resp.Errors != nil {
-		return nil, errors.New("execute: server returned error: see response.Errors for details")
+		return resp, errors.New("execute: server returned error: see response.Errors for details")
 	}
 
 	return resp, nil
