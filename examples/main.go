@@ -78,4 +78,19 @@ func main() {
 	}
 	fmt.Println(resp.AffectedRows())
 
+	resp, err = c.Execute(request.HasuraRequest(
+		request.Query(`query{
+					job_aggregate(where: {job_id:{_gte:0}}){
+						aggregate {
+							count
+						}
+					}
+				}`), nil,
+	))
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Println(resp.Aggregate())
+
 }

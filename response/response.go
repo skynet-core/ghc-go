@@ -76,3 +76,17 @@ func (d Data) AffectedRows() (int, error) {
 	}
 	return 0, errors.New("no returning objects")
 }
+
+// Aggregate ...
+func (d Data) Aggregate() map[string]interface{} {
+	for k, v := range d {
+		if ss := strings.Split(k, "_"); len(ss) > 1 && ss[1] == "aggregate" {
+			m := make(map[string]interface{}, 0)
+			if err := json.Unmarshal(v, &m); err != nil {
+				return nil
+			}
+			return m
+		}
+	}
+	return nil
+}
