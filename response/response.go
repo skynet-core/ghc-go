@@ -2,7 +2,7 @@ package response
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 	"reflect"
 )
 
@@ -56,21 +56,20 @@ func (d Data) ReturningMap() map[string]interface{} {
 }
 
 // MapResult ...
-func (d Data) MapResult(m *[]Model) (err error) {
-	defer func() {
-		if ev := recover(); ev != nil {
-			err = fmt.Errorf("%v", ev)
-		}
-	}()
+func (d Data) MapResult(m interface{}) error {
 
-	inst := reflect.New(reflect.TypeOf(m).Elem().Elem()).Elem().Interface()
-	ni := inst.(Model)
-	// if !ok {
-
-	// }
-	if r, ok := d[ni.Table()]; ok {
-		err = json.Unmarshal(r, m)
-		return
+	t := reflect.TypeOf(m)
+	if t.Kind() != reflect.Ptr && t.Elem().Kind() != reflect.Slice {
+		return errors.New("argument must have *[]response.Model type")
 	}
-	return
+
+	inst := reflect.New(t.Elem().Elem()).Elem().Interface()
+	ni, ok := inst.(Model)
+	if !ok {
+		return errors.New("argument must have *[]response.Model type")
+	}
+	if r, ok := d[ni.Table()]; ok {
+		return json.Unmarshal(r, m)
+	}
+	return nil
 }

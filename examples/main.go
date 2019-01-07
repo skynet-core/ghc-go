@@ -5,8 +5,6 @@ import (
 	"log"
 	"strings"
 
-	"github.com/skynet-ltd/ghc-go/response"
-
 	"github.com/skynet-ltd/ghc-go/client"
 	"github.com/skynet-ltd/ghc-go/request"
 )
@@ -15,6 +13,16 @@ import (
 type Sales struct {
 	Geo     string `mapstructure:"geo"`
 	Keyword string `mapstructure:"keyword"`
+}
+
+// Schema ...
+func (s *Sales) Schema() []string {
+	return []string{"geo", "keyword"}
+}
+
+// Table ...
+func (s *Sales) Table() string {
+	return "sales"
 }
 
 func main() {
@@ -32,7 +40,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	sales := make([]response.Model, 0)
+	sales := make([]*Sales, 0)
 	if err = resp.MapResult(&sales); err != nil {
 		log.Fatalln(err)
 	}
