@@ -1,43 +1,76 @@
 package response
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
-
-	"github.com/mitchellh/mapstructure"
 )
 
-type data struct {
+// Model ...
+type Model interface {
+	Table() string
+	Schema() []string
 }
 
 // Response ...
 type Response struct {
-	Data         map[string][]map[string]interface{} `json:"data,omitempty"`
-	Errors       []interface{}                       `json:"errors,omitempty"`
+	Data         `json:"data,omitempty"`
+	Errors       []interface{} `json:"errors,omitempty"`
 	Subscription chan interface{}
 }
 
-// ConsvertTo ...
-func (res *Response) ConsvertTo(sv interface{}) (err error) {
+// Data ...
+type Data map[string]json.RawMessage
+
+// AffectedRows ...
+func (d Data) AffectedRows() int {
+	n, ok := d["affected_rows"]
+	if !ok {
+		return 0
+	}
+	var num int
+	if err := json.Unmarshal(n, &num); err != nil {
+		return 0
+	}
+	return num
+}
+
+// ReturningRaw ...
+func (d Data) ReturningRaw() json.RawMessage {
+	if rm, ok := d["returning"]; ok {
+		return rm
+	}
+	return nil
+}
+
+// ReturningMap ...
+func (d Data) ReturningMap() map[string]interface{} {
+	if rm, ok := d["returning"]; ok {
+		m := make(map[string]interface{})
+		if err := json.Unmarshal(rm, &m); err != nil {
+			return nil
+		}
+		return m
+	}
+	return nil
+}
+
+// MapResult ...
+func (d Data) MapResult(m *[]Model) (err error) {
 	defer func() {
 		if ev := recover(); ev != nil {
 			err = fmt.Errorf("%v", ev)
 		}
 	}()
 
-	t := reflect.TypeOf(sv).Elem().Elem()
-	result := reflect.New(reflect.SliceOf(t))
+	inst := reflect.New(reflect.TypeOf(m).Elem().Elem()).Elem().Interface()
+	ni := inst.(Model)
+	// if !ok {
 
-	for _, sv := range res.Data {
-		for _, v := range sv {
-			nt := reflect.New(t)
-			if err = mapstructure.Decode(v, nt.Interface()); err != nil {
-				return err
-			}
-			result.Elem().Set(reflect.Append(result.Elem(), nt.Elem()))
-		}
+	// }
+	if r, ok := d[ni.Table()]; ok {
+		err = json.Unmarshal(r, m)
+		return
 	}
-
-	reflect.ValueOf(sv).Elem().Set(result.Elem())
-	return nil
+	return
 }
