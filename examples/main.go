@@ -49,4 +49,33 @@ func main() {
 		fmt.Println(s)
 	}
 
+	resp, err = c.Execute(request.HasuraRequest(
+		request.NewMutation(`mutation ($jobs:[job_insert_input!]!){
+					insert_job(objects:$jobs){
+						affected_rows
+						returning {
+							job_id
+						}
+					}
+				}`), request.Variables{
+			"jobs": []map[string]interface{}{
+				map[string]interface{}{
+					"op_id":      244,
+					"job_type":   "sales",
+					"job_fields": map[string]interface{}{},
+				},
+			},
+		},
+	))
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	dst := []map[string]interface{}{}
+
+	if err = resp.Returning(&dst); err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(resp.AffectedRows())
+
 }

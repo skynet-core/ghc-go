@@ -4,7 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"reflect"
+	"strings"
 )
+
+var returnedOps = map[string]bool{
+	"insert": true,
+	"update": true,
+	"delete": true,
+}
 
 // Model ...
 type Model interface {
@@ -22,37 +29,18 @@ type Response struct {
 // Data ...
 type Data map[string]json.RawMessage
 
-// AffectedRows ...
-func (d Data) AffectedRows() int {
-	n, ok := d["affected_rows"]
-	if !ok {
-		return 0
-	}
-	var num int
-	if err := json.Unmarshal(n, &num); err != nil {
-		return 0
-	}
-	return num
-}
-
-// ReturningRaw ...
-func (d Data) ReturningRaw() json.RawMessage {
-	if rm, ok := d["returning"]; ok {
-		return rm
-	}
-	return nil
-}
-
-// ReturningMap ...
-func (d Data) ReturningMap() map[string]interface{} {
-	if rm, ok := d["returning"]; ok {
-		m := make(map[string]interface{})
-		if err := json.Unmarshal(rm, &m); err != nil {
-			return nil
+// Returning ...
+func (d Data) Returning(dst interface{}) error {
+	for k, v := range d {
+		if ss := strings.Split(k, "_"); len(ss) > 1 && returnedOps[ss[0]] {
+			m := make(map[string]json.RawMessage, 0)
+			if err := json.Unmarshal(v, &m); err != nil {
+				return err
+			}
+			return json.Unmarshal(m["returning"], dst)
 		}
-		return m
 	}
-	return nil
+	return errors.New("no returning objects")
 }
 
 // MapResult ...
@@ -72,4 +60,19 @@ func (d Data) MapResult(m interface{}) error {
 		return json.Unmarshal(r, m)
 	}
 	return nil
+}
+
+// AffectedRows ...
+func (d Data) AffectedRows() (int, error) {
+	for k, v := range d {
+		if ss := strings.Split(k, "_"); len(ss) > 1 && returnedOps[ss[0]] {
+			m := make(map[string]json.RawMessage, 0)
+			if err := json.Unmarshal(v, &m); err != nil {
+				return 0, err
+			}
+			var rows int
+			return rows, json.Unmarshal(m["affected_rows"], &rows)
+		}
+	}
+	return 0, errors.New("no returning objects")
 }
