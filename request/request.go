@@ -51,10 +51,8 @@ type Variables map[string]interface{}
 
 // Request ...
 type Request struct {
-	Query        `json:"query"`
-	Mutation     `json:"mutation,omitempty"`
-	Subscription `json:"subscription,omitempty"`
-	Variables    `json:"variables,omitempty"`
+	Query     HasuraQuery `json:"query"`
+	Variables `json:"variables,omitempty"`
 
 	t reflect.Type
 }
@@ -66,20 +64,9 @@ func (r *Request) Type() reflect.Type {
 
 // HasuraRequest ...
 func HasuraRequest(query HasuraQuery, vars Variables) *Request {
-	rq := &Request{
-		t: reflect.TypeOf(query),
+	return &Request{
+		Query:     query,
+		t:         reflect.TypeOf(query),
+		Variables: vars,
 	}
-	switch v := query.(type) {
-	case Query:
-		rq.Query = Query(query.String())
-	case Mutation:
-		rq.Mutation = Mutation(query.String())
-	case Subscription:
-		rq.Subscription = Subscription(query.String())
-	default:
-		panic("there are no registered cases for " + v.String())
-	}
-
-	rq.Variables = vars
-	return rq
 }
