@@ -5,6 +5,8 @@ import (
 	"log"
 	"strings"
 
+	"github.com/skynet-ltd/ghc-go/response"
+
 	"github.com/skynet-ltd/ghc-go/client"
 	"github.com/skynet-ltd/ghc-go/request"
 )
@@ -30,13 +32,13 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	sales := make([]*Sales, 0)
-	if err = resp.ConsvertTo(&sales); err != nil {
+	sales := make([]response.Model, 0)
+	if err = resp.MapResult(&sales); err != nil {
 		log.Fatalln(err)
 	}
 
 	for _, s := range sales {
-		fmt.Println(*s)
+		fmt.Println(s)
 	}
 
 }
