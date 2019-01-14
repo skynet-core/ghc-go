@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -44,7 +45,7 @@ func New(apiURL string, opts *Options) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Client{u: u}, nil
+	return &Client{u: u, opts: opts}, nil
 }
 
 // Execute ...
@@ -80,6 +81,8 @@ func (c *Client) httpExecute(u *url.URL, data []byte) (*response.Response, error
 			}
 		}
 	}
+
+	fmt.Println("HEADERS:", req.Header)
 
 	res, err := httpClient.Do(req)
 	if err != nil {
