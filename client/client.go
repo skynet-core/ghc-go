@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -81,8 +80,6 @@ func (c *Client) httpExecute(u *url.URL, data []byte) (*response.Response, error
 			}
 		}
 	}
-
-	fmt.Println("HEADERS:", req.Header)
 
 	res, err := httpClient.Do(req)
 	if err != nil {
