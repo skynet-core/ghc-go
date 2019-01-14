@@ -59,22 +59,22 @@ func (c *Client) Execute(req *request.Request) (*response.Response, error) {
 
 	switch req.Type() {
 	case reflect.TypeOf(request.Query("")), reflect.TypeOf(request.Mutation("")):
-		return httpExecute(c.u, data, c.opts)
+		return c.httpExecute(c.u, data)
 	case reflect.TypeOf(request.Subscription("")):
-		return wsExecute(c.u, data, c.opts)
+		return c.wsExecute(c.u, data)
 	default:
 		return nil, errors.New("execute: unsupported request type: " + req.Type().String())
 	}
 }
 
-func httpExecute(u *url.URL, data []byte, opts *Options) (*response.Response, error) {
+func (c *Client) httpExecute(u *url.URL, data []byte) (*response.Response, error) {
 	req, err := http.NewRequest(http.MethodPost, u.String(), bytes.NewReader(data))
 	if err != nil {
 		return nil, errors.New("execute: new request: " + err.Error())
 	}
 
-	if opts != nil && opts.Header != nil {
-		for k, v := range opts.Header {
+	if c.opts != nil && c.opts.Header != nil {
+		for k, v := range c.opts.Header {
 			for _, h := range v {
 				req.Header.Add(k, h)
 			}
@@ -108,7 +108,7 @@ func httpExecute(u *url.URL, data []byte, opts *Options) (*response.Response, er
 	return resp, nil
 }
 
-func wsExecute(u *url.URL, data []byte, opts *Options) (*response.Response, error) {
+func (c *Client) wsExecute(u *url.URL, data []byte) (*response.Response, error) {
 	panic("isn't supported yet")
 }
 
