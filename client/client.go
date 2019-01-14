@@ -19,7 +19,7 @@ var httpClient *http.Client
 
 // Options ...
 type Options struct {
-	header http.Header
+	Header http.Header
 }
 
 // Client ....
@@ -73,7 +73,7 @@ func httpExecute(u *url.URL, data []byte, opts *Options) (*response.Response, er
 		return nil, errors.New("execute: new request: " + err.Error())
 	}
 
-	for k, v := range opts.header {
+	for k, v := range opts.Header {
 		for _, h := range v {
 			req.Header.Add(k, h)
 		}
