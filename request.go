@@ -1,4 +1,4 @@
-package request
+package ghc
 
 import (
 	"fmt"

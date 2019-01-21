@@ -1,4 +1,4 @@
-package client
+package ghc
 
 import (
 	"bytes"
@@ -9,10 +9,6 @@ import (
 	"net/url"
 	"reflect"
 	"sync"
-
-	"github.com/skynet-ltd/ghc-go/response"
-
-	"github.com/skynet-ltd/ghc-go/request"
 )
 
 var httpClient *http.Client
@@ -48,7 +44,7 @@ func New(apiURL string, opts *Options) (*Client, error) {
 }
 
 // Execute ...
-func (c *Client) Execute(req *request.Request) (*response.Response, error) {
+func (c *Client) Execute(req *Request) (*Response, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -58,16 +54,16 @@ func (c *Client) Execute(req *request.Request) (*response.Response, error) {
 	}
 
 	switch req.Type() {
-	case reflect.TypeOf(request.Query("")), reflect.TypeOf(request.Mutation("")):
+	case reflect.TypeOf(Query("")), reflect.TypeOf(Mutation("")):
 		return c.httpExecute(c.u, data)
-	case reflect.TypeOf(request.Subscription("")):
+	case reflect.TypeOf(Subscription("")):
 		return c.wsExecute(c.u, data)
 	default:
 		return nil, errors.New("execute: unsupported request type: " + req.Type().String())
 	}
 }
 
-func (c *Client) httpExecute(u *url.URL, data []byte) (*response.Response, error) {
+func (c *Client) httpExecute(u *url.URL, data []byte) (*Response, error) {
 	req, err := http.NewRequest(http.MethodPost, u.String(), bytes.NewReader(data))
 	if err != nil {
 		return nil, errors.New("execute: new request: " + err.Error())
@@ -93,7 +89,7 @@ func (c *Client) httpExecute(u *url.URL, data []byte) (*response.Response, error
 
 	defer res.Body.Close()
 
-	resp := &response.Response{}
+	resp := &Response{}
 
 	decoder := json.NewDecoder(bytes.NewReader(data))
 
@@ -108,7 +104,7 @@ func (c *Client) httpExecute(u *url.URL, data []byte) (*response.Response, error
 	return resp, nil
 }
 
-func (c *Client) wsExecute(u *url.URL, data []byte) (*response.Response, error) {
+func (c *Client) wsExecute(u *url.URL, data []byte) (*Response, error) {
 	panic("isn't supported yet")
 }
 

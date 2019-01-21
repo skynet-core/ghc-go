@@ -1,4 +1,4 @@
-package response
+package ghc
 
 import (
 	"bytes"
@@ -25,7 +25,7 @@ type Container struct {
 
 // To ...
 func (c *Container) To(t interface{}) error {
-	return json.NewDecoder(bytes.NewBuffer(c.v.EncodeJSON())).Decode(&t)
+	return json.NewDecoder(bytes.NewBuffer(c.v.Bytes())).Decode(&t)
 }
 
 // Path ...

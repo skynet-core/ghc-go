@@ -5,14 +5,13 @@ import (
 	"log"
 	"strings"
 
-	"github.com/skynet-ltd/ghc-go/client"
-	"github.com/skynet-ltd/ghc-go/request"
+	ghc "github.com/skynet-ltd/ghc-go"
 )
 
 // Sales ...
 type Sales struct {
-	Geo     string `mapstructure:"geo"`
-	Keyword string `mapstructure:"keyword"`
+	Geo     string
+	Keyword string
 }
 
 // Schema ...
@@ -27,13 +26,13 @@ func (s *Sales) Table() string {
 
 func main() {
 
-	c, err := client.New("http://localhost:8080/v1alpha1/graphql", nil)
+	c, err := ghc.New("http://localhost:8080/v1alpha1/graphql", nil)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	resp, err := c.Execute(request.HasuraRequest(
-		request.NewQuery(`query{
+	resp, err := c.Execute(ghc.HasuraRequest(
+		ghc.NewQuery(`query{
 					sales(where:{id:{_lte:%d}}){ %s }
 				}`, 3, strings.Join([]string{"geo", "keyword"}, ",")), nil,
 	))
