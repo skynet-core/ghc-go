@@ -25,6 +25,9 @@ type Container struct {
 
 // To ...
 func (c *Container) To(t interface{}) error {
+	if c.v.Data() == nil {
+		return nil
+	}
 	return json.NewDecoder(bytes.NewBuffer(c.v.Bytes())).Decode(&t)
 }
 
