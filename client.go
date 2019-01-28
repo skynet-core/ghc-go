@@ -10,8 +10,6 @@ import (
 	"reflect"
 )
 
-var httpClient *http.Client
-
 // Options ...
 type Options struct {
 	Header http.Header
@@ -19,17 +17,21 @@ type Options struct {
 
 // Client ....
 type Client struct {
-	u    *url.URL
-	opts *Options
+	u          *url.URL
+	opts       *Options
+	httpClient *http.Client
 }
 
 // New ...
 func New(apiURL string, opts *Options) (*Client, error) {
-	var err error
-	var url *url.URL
+	var (
+		err error
+		url *url.URL
+		cl  *http.Client
+	)
 
 	if opts != nil {
-		if err = initHTTPClient(opts); err != nil {
+		if cl, err = initHTTPClient(opts); err != nil {
 			return nil, errors.New("can't configure client:" + err.Error())
 		}
 	}
@@ -38,7 +40,7 @@ func New(apiURL string, opts *Options) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Client{u: u, opts: opts}, nil
+	return &Client{u: u, opts: opts, httpClient: cl}, nil
 }
 
 // Execute ...
@@ -72,7 +74,7 @@ func (c *Client) httpExecute(u *url.URL, data []byte) (*Response, error) {
 		}
 	}
 
-	res, err := httpClient.Do(req)
+	res, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, errors.New("execute: request: " + err.Error())
 	}
@@ -103,13 +105,9 @@ func (c *Client) wsExecute(u *url.URL, data []byte) (*Response, error) {
 	panic("isn't supported yet")
 }
 
-func initHTTPClient(opts *Options) error {
+func initHTTPClient(opts *Options) (*http.Client, error) {
 	if opts != nil {
-		return nil
+		return nil, errors.New("isn't supported yet")
 	}
-	return nil
-}
-
-func init() {
-	httpClient = http.DefaultClient
+	return http.DefaultClient, nil
 }
