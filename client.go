@@ -106,8 +106,5 @@ func (c *Client) wsExecute(u *url.URL, data []byte) (*Response, error) {
 }
 
 func initHTTPClient(opts *Options) (*http.Client, error) {
-	if opts != nil {
-		return nil, errors.New("isn't supported yet")
-	}
 	return http.DefaultClient, nil
 }
