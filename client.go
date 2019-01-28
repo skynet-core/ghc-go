@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
-	"sync"
 )
 
 var httpClient *http.Client
@@ -21,7 +20,6 @@ type Options struct {
 // Client ....
 type Client struct {
 	u    *url.URL
-	mu   sync.Mutex
 	opts *Options
 }
 
@@ -45,9 +43,6 @@ func New(apiURL string, opts *Options) (*Client, error) {
 
 // Execute ...
 func (c *Client) Execute(req *Request) (*Response, error) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
 	data, err := json.Marshal(req)
 	if err != nil {
 		return nil, errors.New("execute: marshal error: " + err.Error())
