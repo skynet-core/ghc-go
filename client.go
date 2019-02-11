@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"reflect"
+
+	"github.com/valyala/fasthttp"
 )
 
 // Options ...
@@ -19,7 +20,7 @@ type Options struct {
 type Client struct {
 	u          *url.URL
 	opts       *Options
-	httpClient *http.Client
+	httpClient *fasthttp.Client
 }
 
 // New ...
@@ -27,7 +28,7 @@ func New(apiURL string, opts *Options) (*Client, error) {
 	var (
 		err error
 		url *url.URL
-		cl  *http.Client
+		cl  *fasthttp.Client
 	)
 
 	if opts != nil {
@@ -61,10 +62,10 @@ func (c *Client) Execute(req *Request) (*Response, error) {
 }
 
 func (c *Client) httpExecute(u *url.URL, data []byte) (*Response, error) {
-	req, err := http.NewRequest(http.MethodPost, u.String(), bytes.NewReader(data))
-	if err != nil {
-		return nil, errors.New("execute: new request: " + err.Error())
-	}
+	req := fasthttp.AcquireRequest()
+	req.Header.SetMethod("POST")
+	req.SetRequestURI(u.String())
+	req.SetBody(data)
 
 	if c.opts != nil && c.opts.Header != nil {
 		for k, v := range c.opts.Header {
@@ -74,21 +75,15 @@ func (c *Client) httpExecute(u *url.URL, data []byte) (*Response, error) {
 		}
 	}
 
-	res, err := c.httpClient.Do(req)
+	res := fasthttp.AcquireResponse()
+	err := c.httpClient.Do(req, res)
 	if err != nil {
 		return nil, errors.New("execute: request: " + err.Error())
 	}
 
-	data, err = ioutil.ReadAll(res.Body)
-	if err != nil {
-		return nil, errors.New("execute: read response: " + err.Error())
-	}
-
-	defer res.Body.Close()
-
 	resp := &Response{}
 
-	decoder := json.NewDecoder(bytes.NewReader(data))
+	decoder := json.NewDecoder(bytes.NewReader(res.Body()))
 
 	if err = decoder.Decode(resp); err != nil {
 		return nil, errors.New("execute: decode response: " + err.Error())
@@ -105,6 +100,6 @@ func (c *Client) wsExecute(u *url.URL, data []byte) (*Response, error) {
 	panic("isn't supported yet")
 }
 
-func initHTTPClient(opts *Options) (*http.Client, error) {
-	return http.DefaultClient, nil
+func initHTTPClient(opts *Options) (*fasthttp.Client, error) {
+	return &fasthttp.Client{}, nil
 }
