@@ -46,7 +46,7 @@ func main() {
 		ids[i] = n
 	}
 	wg := sync.WaitGroup{}
-	controller := make(chan struct{}, 100)
+	controller := make(chan struct{}, 300)
 	for _, id := range ids {
 		id := id
 		wg.Add(1)
