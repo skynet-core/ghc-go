@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"sync"
 
-	ghc "github.com/skynet-ltd/ghc-go"
+	ghc "github.com/skynet-core/ghc-go"
 )
 
 func main() {
